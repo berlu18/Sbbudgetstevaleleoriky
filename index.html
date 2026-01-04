@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <title>Budget Famiglia Berlusconi</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #cfe8ff; /* azzurro chiaro */
+            color: #123;
+        }
+<div id="loginScreen" style="
+    position: fixed;
+    inset: 0;
+    background: #cfe8ff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    font-family: system-ui;
+    z-index: 9999;
+">
+    <h2>Accesso Budget Famiglia</h2>
+
+    <label>Utente:</label>
+    <select id="loginUser" style="padding:6px; font-size:1rem;">
+        <option value="Ste">Ste</option>
+        <option value="vale">Vale</option>
+    </select>
+
+    <label>Password:</label>
+    <input id="loginPass" type="password" style="padding:6px; font-size:1rem;" />
+
+    <button id="loginBtn" style="
+        padding: 8px 16px;
+        background: #0077cc;
+        color: white;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    ">Entra</button>
+
+    <p id="loginError" style="color:red; font-size:0.9rem; display:none;">
+        Password errata
+    </p>
+</div>
+
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+            background: linear-gradient(90deg, #0077cc, #44aaff);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .title-block p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #004c80;
+        }
+
+        .card {
+            background: #f7fbff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        @media (min-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #123;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #aac;
+            font-size: 0.9rem;
+            margin-top: 3px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 40px;
+        }
+
+        button {
+            border-radius: 6px;
+            border: none;
+            padding: 7px 14px;
+            background: #0077cc;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        button:hover {
+            background: #005fa3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #dde6f0;
+            padding: 6px 4px;
+            text-align: left;
+        }
+
+        th {
+            background: #e3f0ff;
+            color: #234;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .scroll-table {
+            max-height: 260px;
+            overflow: auto;
+            border-radius: 6px;
+            border: 1px solid #c7d8ee;
+            background: white;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            background: #ddeeff;
+        }
+
+        .pill-income {
+            background: #d0f5dc;
+            color: #145c22;
+        }
+
+        .pill-expense {
+            background: #ffd6d6;
+            color: #8b1f1f;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .summary-item {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #c7d8ee;
+        }
+
+        .summary-item span.label {
+            display: block;
+            font-size: 0.75rem;
+            color: #567;
+        }
+
+        .summary-item span.value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .value.green { color: #0a7a3a; }
+        .value.red { color: #b22020; }
+        .value.blue { color: #005fa3; }
+
+        .comment-box {
+            font-size: 0.85rem;
+            background: #eef5ff;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .comment-box h3 {
+            margin-top: 0;
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        .comment-list {
+            max-height: 150px;
+            overflow: auto;
+        }
+
+        .comment {
+            border-bottom: 1px dashed #ccd7ec;
+            padding: 4px 0;
+        }
+
+        .comment small {
+            display: block;
+            color: #567;
+            font-size: 0.75rem;
+        }
+
+        .month-selector {
+            margin-bottom: 10px;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #456;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <!-- Logo SB creato in SVG -->
+    <svg class="logo" viewBox="0 0 100 100">
+        <defs>
+            <linearGradient id="gradSB" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#a4d2ff" />
+            </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r="48" fill="url(#gradSB)" stroke="#005fa3" stroke-width="3"/>
+        <text x="50" y="58" text-anchor="middle"
+              font-family="system-ui, sans-serif"
+              font-weight="900" font-size="38" fill="#005fa3">
+            SB
+        </text>
+    </svg>
+
+    <div class="title-block">
+        <h1>Famiglia Berlusconi</h1>
+        <p>Budget famigliare – Entrate, uscite, commenti e resoconto annuale</p>
+    </div>
+</header>
+
+<main>
+    <section class="card">
+        <h2>Impostazioni anno e mese</h2>
+        <div class="grid" style="gap:10px; max-width:360px;">
+            <div>
+                <label for="yearSelect">Anno</label>
+                <input type="number" id="yearSelect" min="2000" max="2100" />
+            </div>
+            <div>
+                <label for="monthSelect">Mese</label>
+                <select id="monthSelect" class="month-selector">
+                    <option value="0">Gennaio</option>
+                    <option value="1">Febbraio</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Aprile</option>
+                    <option value="4">Maggio</option>
+                    <option value="5">Giugno</option>
+                    <option value="6">Luglio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Settembre</option>
+                    <option value="9">Ottobre</option>
+                    <option value="10">Novembre</option>
+                    <option value="11">Dicembre</option>
+                </select>
+            </div>
+        </div>
+        <p style="font-size:0.85rem; margin-top:8px;">
+            Le entrate/uscite inserite saranno collegate al mese e all'anno selezionati.
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>Nuova voce di budget</h2>
+        <div class="grid grid-2">
+            <div>
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
+                    <div>
+                        <label for="typeSelect">Tipo</label>
+                        <select id="typeSelect">
+                            <option value="entrata">Entrata</option>
+                            <option value="uscita">Uscita</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="dateInput">Data</label>
+                        <input type="date" id="dateInput" />
+                    </div>
+                    <div>
+                        <label for="amountInput">Importo (€)</label>
+                        <input type="number" id="amountInput" min="0" step="0.01" placeholder="0.00" />
+                    </div>
+                    <div>
+                        <label for="categoryInput">Categoria</label>
+			<select id="categoryInput">
+			<option value="Stipendio o entrata">Stipendio o entrata</option>
+    			<option value="Auto">Auto</option>
+    			<option value="Assicurazione e Bollo">Assicurazione e Bollo</option>
+    			<option value="Spesa">Spesa</option>
+    			<option value="Logopedista e Pedagogista">Logopedista e Pedagogista</option>
+    			<option value="Assicurazione Sanitaria">Assicurazione Sanitaria</option>
+    			<option value="Fondo Leo e Riky">Fondo Leo e Riky</option>
+    			<option value="Fondo Stevale">Fondo Stevale</option>
+    			<option value="Pulizie">Pulizie</option>
+    			<option value="Bollette">Bollette</option>
+    			<option value="Varie">Varie</option>
+    			<option value="Divertimento">Divertimento</option>
+			<option value="Carta di credito">Carta di credito</option>
+			</select>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label for="descriptionInput">Descrizione</label>
+                    <input type="text" id="descriptionInput" placeholder="Es. Spesa supermercato, Stipendio di Leo..." />
+                </div>
+                <div style="margin-top:8px;">
+                    <label for="noteInput">Commento/Note</label>
+                    <textarea id="noteInput" placeholder="Aggiungi un commento (facoltativo)..."></textarea>
+                </div>
+                <div style="margin-top:10px;">
+                    <button id="addEntryBtn" type="button">Aggiungi voce</button>
+                </div>
+            </div>
+            <div>
+                <div class="summary">
+                    <div class="summary-item">
+                        <span class="label">Entrate mese</span>
+                        <span id="monthIncome" class="value green">€ 0,00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Uscite mese</span>
+                        <span id="monthExpense" class="value red">€ 0,00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Saldo mese</span>
+                        <span id="monthBalance" class="value blue">€ 0,00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Saldo anno</span>
+                        <span id="yearBalance" class="value blue">€ 0,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Movimenti mensili</h2>
+        <p style="font-size:0.85rem; margin-top:0;">
+            Elenco delle entrate e uscite del mese selezionato, con categoria e commenti.
+        </p>
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Categoria</th>
+                        <th>Descrizione</th>
+                        <th>Importo (€)</th>
+                        <th>Commento</th>
+			<th>Elimina</th>
+                    </tr>
+                </thead>
+                <tbody id="entryTableBody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Resoconto annuale</h2>
+        <p style="font-size:0.85rem; margin-top:0;">
+            Totali per ogni mese dell'anno selezionato.
+        </p>
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mese</th>
+                        <th>Entrate (€)</th>
+                        <th>Uscite (€)</th>
+                        <th>Saldo (€)</th>
+                    </tr>
+                </thead>
+                <tbody id="annualTableBody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="comment-box">
+            <h3>Commenti generali dell'anno</h3>
+            <label for="generalCommentInput">Aggiungi un commento</label>
+            <textarea id="generalCommentInput" placeholder="Note generali sull'anno, obiettivi, osservazioni..."></textarea>
+            <div style="margin-top:6px;">
+                <button id="addGeneralCommentBtn" type="button">Salva commento</button>
+            </div>
+            <div class="comment-list" id="generalCommentList"></div>
+        </div>
+    </section>
+
+    <div class="footer-note">
+        Budget famigliare – Famiglia Berlusconi · I dati vengono salvati nel browser di questo dispositivo.
+    </div>
+</main>
+
+
+<script>
+    const STORAGE_KEY = "familyBudgetSB";
+
+    function loadData() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            console.error("Errore caricando i dati:", e);
+            return {};
+        }
+    }
+
+    function saveData(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    let data = loadData();
+
+    const yearSelect = document.getElementById("yearSelect");
+    const monthSelect = document.getElementById("monthSelect");
+    const typeSelect = document.getElementById("typeSelect");
+    const dateInput = document.getElementById("dateInput");
+    const amountInput = document.getElementById("amountInput");
+    const categoryInput = document.getElementById("categoryInput");
+    const descriptionInput = document.getElementById("descriptionInput");
+    const noteInput = document.getElementById("noteInput");
+    const addEntryBtn = document.getElementById("addEntryBtn");
+
+    const monthIncomeSpan = document.getElementById("monthIncome");
+    const monthExpenseSpan = document.getElementById("monthExpense");
+    const monthBalanceSpan = document.getElementById("monthBalance");
+    const yearBalanceSpan = document.getElementById("yearBalance");
+
+    const entryTableBody = document.getElementById("entryTableBody");
+    const annualTableBody = document.getElementById("annualTableBody");
+
+    const generalCommentInput = document.getElementById("generalCommentInput");
+    const addGeneralCommentBtn = document.getElementById("addGeneralCommentBtn");
+    const generalCommentList = document.getElementById("generalCommentList");
+
+    function ensureYear(year) {
+        if (!data[year]) {
+            data[year] = { generalComments: [] };
+        }
+        for (let m = 0; m < 12; m++) {
+            if (!data[year][m]) data[year][m] = [];
+        }
+    }
+
+    function formatCurrency(num) {
+        const value = Number(num) || 0;
+        return "€ " + value.toFixed(2).replace(".", ",");
+    }
+
+    function monthName(index) {
+        const names = [
+            "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+            "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"
+        ];
+        return names[index] || "";
+    }
+
+    function renderMonthTable(year, month) {
+        ensureYear(year);
+        const entries = data[year][month] || [];
+        entryTableBody.innerHTML = "";
+
+        let monthIncome = 0;
+        let monthExpense = 0;
+
+        entries.forEach((entry, index) => {
+	    const tr = document.createElement("tr");
+
+            const tdDate = document.createElement("td");
+            tdDate.textContent = entry.date || "";
+            tr.appendChild(tdDate);
+
+            const tdType = document.createElement("td");
+            const pill = document.createElement("span");
+            pill.classList.add("pill");
+            if (entry.type === "entrata") {
+                pill.classList.add("pill-income");
+                pill.textContent = "Entrata";
+                monthIncome += Number(entry.amount) || 0;
+            } else {
+                pill.classList.add("pill-expense");
+                pill.textContent = "Uscita";
+                monthExpense += Number(entry.amount) || 0;
+            }
+            tdType.appendChild(pill);
+            tr.appendChild(tdType);
+
+            const tdCategory = document.createElement("td");
+            tdCategory.textContent = entry.category || "";
+            tr.appendChild(tdCategory);
+
+            const tdDescription = document.createElement("td");
+            tdDescription.textContent = entry.description || "";
+            tr.appendChild(tdDescription);
+
+            const tdAmount = document.createElement("td");
+            tdAmount.textContent = formatCurrency(entry.amount);
+            tr.appendChild(tdAmount);
+
+            const tdNote = document.createElement("td");
+            tdNote.textContent = entry.note || "";
+            tr.appendChild(tdNote);
+
+	    // Pulsante elimina
+	    const tdDelete = document.createElement("td");
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "X";
+            delBtn.style.background = "#cc0033";
+            delBtn.style.color = "white";
+            delBtn.style.padding = "4px 8px";
+            delBtn.style.fontSize = "0.8rem";
+            delBtn.style.borderRadius = "4px";
+            delBtn.style.cursor = "pointer";
+
+            delBtn.addEventListener("click", () => {
+            if (confirm("Vuoi davvero eliminare questa voce?")) {
+           data[year][month].splice(index, 1);
+        saveData(data);
+        fullRender();
+    }
+});
+
+tdDelete.appendChild(delBtn);
+tr.appendChild(tdDelete);
+
+
+            entryTableBody.appendChild(tr);
+        });
+
+        monthIncomeSpan.textContent = formatCurrency(monthIncome);
+        monthExpenseSpan.textContent = formatCurrency(monthExpense);
+        const balance = monthIncome - monthExpense;
+        monthBalanceSpan.textContent = formatCurrency(balance);
+    }
+
+    function renderAnnualTable(year) {
+        ensureYear(year);
+        annualTableBody.innerHTML = "";
+
+        let totalIncomeYear = 0;
+        let totalExpenseYear = 0;
+
+        for (let m = 0; m < 12; m++) {
+            const entries = data[year][m] || [];
+            let monthIncome = 0;
+            let monthExpense = 0;
+
+            entries.forEach(e => {
+                if (e.type === "entrata") {
+                    monthIncome += Number(e.amount) || 0;
+                } else {
+                    monthExpense += Number(e.amount) || 0;
+                }
+            });
+
+            totalIncomeYear += monthIncome;
+            totalExpenseYear += monthExpense;
+
+            const tr = document.createElement("tr");
+
+            const tdMonth = document.createElement("td");
+            tdMonth.textContent = monthName(m);
+            tr.appendChild(tdMonth);
+
+            const tdIncome = document.createElement("td");
+            tdIncome.textContent = formatCurrency(monthIncome);
+            tr.appendChild(tdIncome);
+
+            const tdExpense = document.createElement("td");
+            tdExpense.textContent = formatCurrency(monthExpense);
+            tr.appendChild(tdExpense);
+
+            const tdBalance = document.createElement("td");
+            tdBalance.textContent = formatCurrency(monthIncome - monthExpense);
+            tr.appendChild(tdBalance);
+
+            annualTableBody.appendChild(tr);
+        }
+
+        const yearBalance = totalIncomeYear - totalExpenseYear;
+        yearBalanceSpan.textContent = formatCurrency(yearBalance);
+    }
+
+    function renderGeneralComments(year) {
+        ensureYear(year);
+        const comments = data[year].generalComments || [];
+        generalCommentList.innerHTML = "";
+
+        comments.forEach(c => {
+            const div = document.createElement("div");
+            div.classList.add("comment");
+            const text = document.createElement("div");
+            text.textContent = c.text;
+            const small = document.createElement("small");
+            small.textContent = c.date;
+            div.appendChild(text);
+            div.appendChild(small);
+            generalCommentList.appendChild(div);
+        });
+    }
+
+    function fullRender() {
+        const year = String(yearSelect.value);
+        const month = String(monthSelect.value);
+        ensureYear(year);
+        renderMonthTable(year, month);
+        renderAnnualTable(year);
+        renderGeneralComments(year);
+    }
+
+    addEntryBtn.addEventListener("click", () => {
+    const year = String(yearSelect.value);
+    const month = String(monthSelect.value);
+    ensureYear(year);
+
+    const type = typeSelect.value;
+    const date = dateInput.value || "";
+    const amount = parseFloat(amountInput.value);
+    const category = categoryInput.value.trim();
+    const description = descriptionInput.value.trim();
+    const note = noteInput.value.trim();
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("Importo non valido.");
+        return;
+    }
+
+    // ⚠️ Avviso speciale per spese sopra i 300 €
+    if (type === "uscita" && amount > 300) {
+        alert("Il Boss Supremo, ovvero tuo marito, sarebbe d'accordo??");
+    }
+
+    const entry = { type, date, amount, category, description, note };
+
+    data[year][month].push(entry);
+    saveData(data);
+
+    amountInput.value = "";
+    descriptionInput.value = "";
+    noteInput.value = "";
+
+    fullRender();
+});
+
+    yearSelect.addEventListener("change", fullRender);
+    monthSelect.addEventListener("change", fullRender);
+
+    addGeneralCommentBtn.addEventListener("click", () => {
+        const year = String(yearSelect.value);
+        ensureYear(year);
+        const text = generalCommentInput.value.trim();
+        if (!text) return;
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString("it-IT", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        });
+
+        data[year].generalComments.push({ text, date: dateStr });
+
+        saveData(data);
+        generalCommentInput.value = "";
+        renderGeneralComments(year);
+    });
+
+    (function init() {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        yearSelect.value = currentYear;
+        monthSelect.value = String(currentMonth);
+        ensureYear(String(currentYear));
+        fullRender();
+    })();
+</script>
+</body>
+</html>
